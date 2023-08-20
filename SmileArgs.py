@@ -1,12 +1,26 @@
 # built-in
 import re
 import sys
+from typing import Any, Union
 
 
 class SmileArgs:
 	"""
 
 	"""
+	class CommandCollection:
+		def __init__(self):
+			"""
+
+			"""
+			# public
+			self.description    = ''
+			self.cmdLong        = None
+			self.cmdShort       = None
+			self.num            = 0
+			self.priority       = 0
+			self.value          = None
+
 	class Key:
 		"""
 
@@ -54,11 +68,11 @@ class SmileArgs:
 		## command
 		self.__args                 = []
 		## value
-		self.__number               = 0
+		self.__number               = 1
 		## pattern
 		self.__patternBase          = '([(\-\-)(\-)]+\w+)(=?(\w+)?)'
 
-	def __addCollection(self, arg: str) -> None:
+	def __appearCollection(self, arg: str) -> None:
 		"""
 
 		:param arg:
@@ -69,8 +83,8 @@ class SmileArgs:
 			result = re.match(self.__patternBase, arg)
 			# command value
 			# result[0] result[2]
-			if self.__isLong(result[0]):
-				#
+			if self.__isLongCommand(result[0]):
+				# long command
 				self.__args.append({
 					self.Key.LONG   : result[0]
 					, self.Key.SHORT: ''
@@ -78,7 +92,7 @@ class SmileArgs:
 				})
 
 			else:
-				#
+				# short command
 				self.__args.append({
 					self.Key.LONG   : ''
 					, self.Key.SHORT: result[0]
@@ -88,7 +102,7 @@ class SmileArgs:
 		else:
 			result = re.match(self.__patternBase, arg)
 			# result[0]
-			if self.__isLong(result[0]):
+			if self.__isLongCommand(result[0]):
 				#
 				self.__args.append({
 					self.Key.LONG   : result[0]
@@ -122,6 +136,32 @@ class SmileArgs:
 		#
 		return validList
 
+	def __foundCommand(self, command: str) -> bool:
+		"""
+
+		:param command:
+		:return:
+		"""
+		for i in range(self.__commandList.__len__()):
+			print(self.__commandList[i].cmdShort)
+			# short
+			if self.__isShortCommand(command):
+				#
+				if self.__commandList[i].cmdShort and command == self.__commandList[i].cmdShort:
+					# add found
+					self.__commandFound.append(self.__commandList[i].num)
+					return True
+			# long
+			elif self.__isLongCommand(command):
+				#
+				if self.__commandList[i].cmdLong and command == self.__commandList[i].cmdLong:
+					# add found
+					self.__commandFound.append(self.__commandList[i].num)
+					return True
+
+		# nothing
+		return False
+
 	def __hasNoValue(self, command: str) -> bool:
 		"""
 
@@ -154,12 +194,6 @@ class SmileArgs:
 			if command[:self.__commandMinNum] == self.OptionPrefixSymbol.LONG:
 				# 	pass
 				found   = True
-
-			# -
-			elif command[:self.__commandMinNum -1] == self.OptionPrefixSymbol.SHORT:
-				# 	pass
-				found   = False
-
 		#
 		return found
 
@@ -174,15 +208,8 @@ class SmileArgs:
 
 		#
 		if command and len(command) >= self.__commandMinNum:
-			# --
-			if command[:self.__commandMinNum] == self.OptionPrefixSymbol.LONG:
-				# prefix
-				# if command[self.__commandMinNum:]:
-				# 	pass
-				found   = False
-
 			# -
-			elif command[:self.__commandMinNum -1] == self.OptionPrefixSymbol.SHORT:
+			if command[:self.__commandMinNum -1] == self.OptionPrefixSymbol.SHORT:
 				# prefix
 				# if command[self.__commandMinNum -1:]:
 				# 	pass
@@ -191,23 +218,27 @@ class SmileArgs:
 		#
 		return found
 
-	def __isLong(self, command: str) -> bool:
-		"""
+	# def __isLong(self, command: str) -> bool:
+	# 	"""
+	#
+	# 	:param command:
+	# 	:return:
+	# 	"""
+	# 	command = f'{self.OptionPrefixSymbol.LONG}{command}'
+	# 	# verify len and match
+	# 	return len(command) > self.__commandMinNum and command.find(self.OptionPrefixSymbol.LONG) != -1
+	#
+	# def __isShort(self, command: str) -> bool:
+	# 	"""
+	#
+	# 	:param command:
+	# 	:return:
+	# 	"""
+	# 	command = f'{self.OptionPrefixSymbol.SHORT}{command}'
+	# 	# verify len and match
+	# 	return len(command) == self.__commandMinNum and command.find(self.OptionPrefixSymbol.SHORT) != -1
 
-		:param command:
-		:return:
-		"""
-		return command.find(self.OptionPrefixSymbol.LONG) != -1
-
-	def __isShort(self, command: str) -> bool:
-		"""
-
-		:param command:
-		:return:
-		"""
-		return  command.find(self.OptionPrefixSymbol.SHORT) != -1
-
-	def __isValidCommand(self, args: str) -> bool:
+	def __isValidFormatCommand(self, args: str) -> bool:
 		"""
 
 		:param args:
@@ -241,7 +272,7 @@ class SmileArgs:
 		except Exception as e:
 			return False
 
-	def addCommand(self, shortCommand: str, longCommand: str, description: str, priority: int= Priority.IGNORE, overrideNum: list= []) -> None:
+	def addCommand(self, shortCommand: str= None, longCommand: str= None, description: str= None, priority: int= Priority.IGNORE, overrideNum: list= []) -> None:
 		"""
 
 		:param shortCommand:
@@ -251,22 +282,23 @@ class SmileArgs:
 		:param overrideNum:
 		:return:
 		"""
-		# increase power by 2
-		self.__number   *= 2
+		# valid that
+		if longCommand or shortCommand:
+			# increase power by 2
+			self.__number *= 2
 
-		#
-		self.__commandList.append(
-			{
-				# main key
-				self.Key.SHORT          : f'{self.OptionPrefixSymbol.SHORT}{shortCommand}'
-				, self.Key.LONG         : f'{self.OptionPrefixSymbol.LONG}{longCommand}'
-				#
-				, self.Key.DESCRIPTION  : description
-				, self.Key.PRIORITY     : priority
-				# special value
-				, self.Key.NUM          : self.__number
-			}
-		)
+			# object
+			item    = self.CommandCollection()
+			# item
+			item.description= description
+			# main key
+			item.cmdLong    = f'{self.OptionPrefixSymbol.LONG}{longCommand}'  if longCommand else None
+			item.cmdShort   = f'{self.OptionPrefixSymbol.SHORT}{shortCommand}'  if shortCommand else None
+			# special value
+			item.num        = self.__number
+			item.priority   = priority
+			# add to list
+			self.__commandList.append(item)
 
 	def findCommand(self, args: str= '') -> bool:
 		"""
@@ -303,12 +335,12 @@ class SmileArgs:
 		#
 		return temp
 
-	def listCommand(self) -> None:
+	def printCommand(self) -> None:
 		"""
 
 		:return:
 		"""
-		pass
+		print(self.__commandList)
 
 	def removeCommand(self, shortCommand: str, longCommand: str= '') -> None:
 		"""
@@ -338,9 +370,11 @@ class SmileArgs:
 		"""
 		#
 		for a in sys.argv[1:]:
-			if self.__isValidCommand(a):
-				self.__addCollection(a)
+			# print(f'run {a=}')
+			if self.__isValidFormatCommand(a) and self.__foundCommand(a):
+				self.__appearCollection(a)
 
+		print(f'run appear command: {self.__args}, {self.__commandFound}')
 	def setAssignSymbol(self, symbol: str= OptionDelimiterSymbol.EQUAL) -> None:
 		"""
 
