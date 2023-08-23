@@ -1,3 +1,13 @@
+# smileargs
+args library for modern python
+### do.py --version => lowercase
+### do.py -V  => capital letter
+### do.py --man=value => with value and deli is equal symbol
+### do.py --man:value => with value and deli is colon
+## command
+### do.py --man value
+
+## Number Group
 
 ** Pattern and Sample
 ```
@@ -14,23 +24,3 @@
 -na
 -
 ```
-
-## example 
-create a test.py
-```
-from SmileArgs import SmileArgs
-smile   = SmileArgs()
-
-smile.addCommand('a', 'alphabet', 'show alphabet')
-smile.addCommand('b', 'baby', 'miss mom by her baby')
-smile.run()
-print(smile.catchCommand()[0].num)
-```
-
-## cli
-```
-$ python test.py -a -ab -a
-```
-
-## above
-it will catch only one is '-a' as a short command
