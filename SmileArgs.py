@@ -4,35 +4,40 @@ import sys
 from typing import Any, Union
 
 
+class CommandBase:
+	def __init__(self):
+		"""
+
+		"""
+		self.cmdLong    = None
+		self.cmdShort   = None
+		self.num        = 0
+		self.priority   = 0
+		self.value      = None
+
+
+class CommandArgs(CommandBase):
+	def __init__(self):
+		"""
+
+		"""
+		super().__init__()
+		self.isLong         = False
+
+
+class CommandAdd(CommandBase):
+	def __init__(self):
+		"""
+
+		"""
+		super().__init__()
+		self.description    = ''
+
+
 class SmileArgs:
 	"""
 
 	"""
-	class CommandCollection:
-		def __init__(self):
-			"""
-
-			"""
-			# public
-			self.description    = ''
-			self.cmdLong        = None
-			self.cmdShort       = None
-			self.num            = 0
-			self.priority       = 0
-			self.value          = None
-
-	class Key:
-		"""
-
-		"""
-		# key
-		DESCRIPTION = 'd'
-		LONG        = 'l'
-		NUM         = 'n'
-		PRIORITY    = 'p'
-		SHORT       = 's'
-		VALUE       = 'v'
-
 	class OptionPrefixSymbol:
 		"""
 
@@ -56,67 +61,49 @@ class SmileArgs:
 		MEDIUM  = 2
 		HIGH    = 3
 
-	def __init__(self):
+	def __init__(self, duplicated: bool= False, console: bool= True, debug: bool= False):
 		"""
 
+		:param duplicated:
+		:param console:
+		:param debug:
 		"""
 		# private
 		self.__commandAssignedSymbol= self.OptionDelimiterSymbol.EQUAL
-		self.__commandFound         = []
 		self.__commandList          = []
 		self.__commandMinNum        = 2
 		## command
+		self.__acceptedDuplication  = duplicated
 		self.__args                 = []
+		self.__isCmdLong            = False
+		self.__isConsole            = console
+		self.__isDebug              = debug
 		## value
 		self.__number               = 1
 		## pattern
 		self.__patternBase          = '([(\-\-)(\-)]+\w+)(=?(\w+)?)'
 
-	def __appearCollection(self, arg: str) -> None:
+	def __appendPrefixLong(self, command: str = None) -> Union[str | None]:
 		"""
 
-		:param arg:
+		:param command:
 		:return:
 		"""
-		if self.__isValidValue(arg):
-			#
-			result = re.match(self.__patternBase, arg)
-			# command value
-			# result[0] result[2]
-			if self.__isLongCommand(result[0]):
-				# long command
-				self.__args.append({
-					self.Key.LONG   : result[0]
-					, self.Key.SHORT: ''
-					, self.Key.VALUE: result[2]
-				})
+		if command:
+			return f'{self.OptionPrefixSymbol.LONG}{command}'
+		# nothing
+		return None
 
-			else:
-				# short command
-				self.__args.append({
-					self.Key.LONG   : ''
-					, self.Key.SHORT: result[0]
-					, self.Key.VALUE: result[2]
-				})
+	def __appendPrefixShort(self, command: str= None) -> Union[str | None]:
+		"""
 
-		else:
-			result = re.match(self.__patternBase, arg)
-			# result[0]
-			if self.__isLongCommand(result[0]):
-				#
-				self.__args.append({
-					self.Key.LONG   : result[0]
-					, self.Key.SHORT: ''
-					, self.Key.VALUE: ''
-				})
-
-			else:
-				#
-				self.__args.append({
-					self.Key.LONG   : ''
-					, self.Key.SHORT: result[0]
-					, self.Key.VALUE: ''
-				})
+		:param command:
+		:return:
+		"""
+		if command:
+			return f'{self.OptionPrefixSymbol.SHORT}{command}'
+		# nothing
+		return None
 
 	def __cleanArg(self) -> list:
 		"""
@@ -132,35 +119,149 @@ class SmileArgs:
 			#
 			if t.split(self.__commandAssignedSymbol):
 				pass
-
 		#
 		return validList
 
-	def __foundCommand(self, command: str) -> bool:
+	def __console(self, prefix: str= 'Error: ', content: str= None) -> None:
+		"""
+
+		:param prefix:
+		:param content:
+		:return:
+		"""
+		if self.__isConsole:
+			print(f'{prefix}{content}')
+
+	def __debug(self, content: str) -> None:
+		"""
+
+		:param content:
+		:return:
+		"""
+		if self.__isDebug:
+			print(f'Debug: {content}')
+
+	def __findCommand(self, command: str) -> bool:
 		"""
 
 		:param command:
 		:return:
 		"""
 		for i in range(self.__commandList.__len__()):
-			print(self.__commandList[i].cmdShort)
 			# short
 			if self.__isShortCommand(command):
 				#
 				if self.__commandList[i].cmdShort and command == self.__commandList[i].cmdShort:
 					# add found
-					self.__commandFound.append(self.__commandList[i].num)
+					# self.__commandFound.append(self.__commandList[i].num)
+					self.__isCmdLong    = False
 					return True
 			# long
 			elif self.__isLongCommand(command):
 				#
 				if self.__commandList[i].cmdLong and command == self.__commandList[i].cmdLong:
 					# add found
-					self.__commandFound.append(self.__commandList[i].num)
+					# self.__commandFound.append(self.__commandList[i].num)
+					self.__isCmdLong    = True
 					return True
-
 		# nothing
 		return False
+
+	def __grabCommand(self, arg: str) -> None:
+		"""
+
+		:param arg:
+		:return:
+		"""
+		if self.__isValidValue(arg):
+			self.__debug('__grabCommand is valid value')
+			#
+			result = re.match(self.__patternBase, arg)
+			#
+			if self.__isDuplicatedOnGrab(result[0]):
+				self.__debug('----------------found duplicated arg')
+
+			else:
+				# command value
+				# result[0] result[2]
+				if self.__isLongCommand(result[0]):
+					#
+					item    = CommandArgs()
+					for i in range(self.__commandList.__len__()):
+						if result[0] == self.__commandList[i].cmdLong:
+							#
+							item.isLong     = True
+							item.num        = self.__commandList[i].num
+							item.priority   = self.__commandList[i].priority
+							item.value      = result[2]
+							# long command
+							item.cmdLong    = result[0]
+							self.__args.append(item)
+							# exit loop
+							break
+				# double-check with short again
+				elif self.__isShortCommand(result[0]):
+					# short command
+					item    = CommandArgs()
+					for i in range(self.__commandList.__len__()):
+						if result[0] == self.__commandList[i].cmdShort:
+							#
+							item.isLong     = False
+							item.num        = self.__commandList[i].num
+							item.priority   = self.__commandList[i].priority
+							item.value      = result[2]
+							# short command
+							item.cmdShort   = result[0]
+							self.__args.append(item)
+							# exit loop
+							break
+				# nothing with value block
+				else:
+					pass
+		#
+		else:
+			self.__debug('__grabCommand is no value')
+			result = re.match(self.__patternBase, arg)
+			#
+			if self.__isDuplicatedOnGrab(result[0]):
+				self.__debug('----------------found duplicated arg')
+
+			else:
+				# result[0]
+				if self.__isLongCommand(result[0]):
+					#
+					item    = CommandArgs()
+					for i in range(self.__commandList.__len__()):
+						if result[0] == self.__commandList[i].cmdLong:
+							#
+							item.isLong     = True
+							item.num        = self.__commandList[i].num
+							item.priority   = self.__commandList[i].priority
+							item.value      = result[2]
+							# long command
+							item.cmdLong    = result[0]
+							self.__args.append(item)
+							# exit loop
+							break
+				#
+				elif self.__isShortCommand(result[0]):
+					# short command
+					item    = CommandArgs()
+					for i in range(self.__commandList.__len__()):
+						if result[0] == self.__commandList[i].cmdShort:
+							#
+							item.isLong     = False
+							item.num        = self.__commandList[i].num
+							item.priority   = self.__commandList[i].priority
+							item.value      = ''
+							# short command
+							item.cmdShort   = result[0]
+							self.__args.append(item)
+							# exit loop
+							break
+				# nothing with no value block
+				else:
+					pass
 
 	def __hasNoValue(self, command: str) -> bool:
 		"""
@@ -177,7 +278,42 @@ class SmileArgs:
 			return (result.groups()[0]) and (result.groups()[1] == '' and result.groups()[2] is None)
 
 		except Exception as e:
+			self.__console(content= f'{str(e)}')
 			return False
+
+	def __isDuplicatedOnAdd(self, shortCommand: str= None, longCommand: str= None, appendPrefix: bool= True) -> bool:
+		"""
+
+		:param shortCommand:
+		:param longCommand:
+		:param appendPrefix:
+		:return:
+		"""
+		#
+		for i in range(self.__commandList.__len__()):
+			# with prefix - or --
+			if appendPrefix:
+				# self.__debug(f'__isDuplicatedOnAdd append prefix= {self.__appendPrefixShort(shortCommand)=}, {self.__commandList[i].cmdShort=}, {self.__commandList[i].cmdLong=} |  {self.__appendPrefixLong(longCommand)=}, {self.__commandList[i].cmdLong=}')
+				return (self.__appendPrefixShort(shortCommand) == self.__commandList[i].cmdShort) or (self.__appendPrefixLong(longCommand) == self.__commandList[i].cmdLong)
+
+			else:
+				# self.__debug(f'__isDuplicatedOnAdd= {shortCommand=}, {self.__commandList[i].cmdShort=} | {longCommand=}, {self.__commandList[i].cmdLong=}')
+				return shortCommand == self.__commandList[i].cmdShort or longCommand == self.__commandList[i].cmdLong
+		#
+		return False
+
+	def __isDuplicatedOnGrab(self, command: str) -> bool:
+		"""
+
+		:param command:
+		:return:
+		"""
+		#
+		for i in range(self.__args.__len__()):
+			self.__debug(f'__isDuplicatedOnGrab= {command=}, {self.__args[i].cmdShort=}, {self.__args[i].cmdLong=}')
+			return command in [self.__args[i].cmdShort or self.__args[i].cmdLong]
+		#
+		return False
 
 	def __isLongCommand(self, command: str) -> bool:
 		"""
@@ -187,7 +323,7 @@ class SmileArgs:
 		"""
 		#
 		found   = False
-
+		self.__debug(f'__isLongCommand {command}')
 		#
 		if command and len(command) >= self.__commandMinNum:
 			# --
@@ -205,7 +341,7 @@ class SmileArgs:
 		"""
 		#
 		found   = False
-
+		self.__debug(f'__isShortCommand {command}')
 		#
 		if command and len(command) >= self.__commandMinNum:
 			# -
@@ -214,29 +350,8 @@ class SmileArgs:
 				# if command[self.__commandMinNum -1:]:
 				# 	pass
 				found   = True
-
 		#
 		return found
-
-	# def __isLong(self, command: str) -> bool:
-	# 	"""
-	#
-	# 	:param command:
-	# 	:return:
-	# 	"""
-	# 	command = f'{self.OptionPrefixSymbol.LONG}{command}'
-	# 	# verify len and match
-	# 	return len(command) > self.__commandMinNum and command.find(self.OptionPrefixSymbol.LONG) != -1
-	#
-	# def __isShort(self, command: str) -> bool:
-	# 	"""
-	#
-	# 	:param command:
-	# 	:return:
-	# 	"""
-	# 	command = f'{self.OptionPrefixSymbol.SHORT}{command}'
-	# 	# verify len and match
-	# 	return len(command) == self.__commandMinNum and command.find(self.OptionPrefixSymbol.SHORT) != -1
 
 	def __isValidFormatCommand(self, args: str) -> bool:
 		"""
@@ -253,6 +368,7 @@ class SmileArgs:
 			return (result.groups()[0]) and (result.groups()[1] == '' and result.groups()[2] is None)
 
 		except Exception as e:
+			self.__console(content= f'{str(e)}')
 			return False
 
 	def __isValidValue(self, args: str) -> bool:
@@ -270,6 +386,7 @@ class SmileArgs:
 			return (result.groups()[0] and result.groups()[1] and result.groups()[2])
 
 		except Exception as e:
+			self.__console(content= f'{str(e)}')
 			return False
 
 	def addCommand(self, shortCommand: str= None, longCommand: str= None, description: str= None, priority: int= Priority.IGNORE, overrideNum: list= []) -> None:
@@ -284,38 +401,46 @@ class SmileArgs:
 		"""
 		# valid that
 		if longCommand or shortCommand:
-			# increase power by 2
-			self.__number *= 2
+			# continue
+			_continue   = False
 
-			# object
-			item    = self.CommandCollection()
-			# item
-			item.description= description
-			# main key
-			item.cmdLong    = f'{self.OptionPrefixSymbol.LONG}{longCommand}'  if longCommand else None
-			item.cmdShort   = f'{self.OptionPrefixSymbol.SHORT}{shortCommand}'  if shortCommand else None
-			# special value
-			item.num        = self.__number
-			item.priority   = priority
-			# add to list
-			self.__commandList.append(item)
+			# find any existed
+			if self.__isDuplicatedOnAdd(shortCommand= shortCommand, longCommand= longCommand):
+				# self.__debug(f' addCommand duplication {longCommand=}, {shortCommand}')
+				if self.__acceptedDuplication:
+					# accept
+					_continue   = True
+					# self.__debug(f'addCommand duplication accepted')
+			# not exist
+			else:
+				# self.__debug(f'addCommand not duplicated')
+				_continue   = True
 
-	def findCommand(self, args: str= '') -> bool:
+			#
+			if _continue:
+				# self.__debug(f'addCommand append')
+				# increase power by 2
+				self.__number *= 2
+
+				# object
+				item    = CommandAdd()
+				# item
+				item.description= description
+				# main key
+				item.cmdLong    = f'{self.OptionPrefixSymbol.LONG}{longCommand}'  if longCommand else None
+				item.cmdShort   = f'{self.OptionPrefixSymbol.SHORT}{shortCommand}'  if shortCommand else None
+				# special value
+				item.num        = self.__number
+				item.priority   = priority
+				# add to list
+				self.__commandList.append(item)
+
+	def catchCommand(self) -> list:
 		"""
-		@search command
-		:param args:
+
 		:return:
 		"""
-		# command
-		commandKey  = ''
-		commandLong = ''
-		commandShort= ''
-		#
-		found       = False
-
-		# ([(\-\-)(\-)]+\w+)(=?(\w+)?)
-		# after filter and calculation
-		return found
+		return self.__args
 
 	def getCommand(self) -> list:
 		"""
@@ -324,44 +449,48 @@ class SmileArgs:
 		"""
 		return self.__commandList
 
-	def getNumByCommand(self, command: str) -> int:
+	def getNumByCommand(self, command: str, addPrefix: bool= False) -> int:
 		"""
 
 		:param command:
+		:param addPrefix:
 		:return:
 		"""
-		temp    = 0
-
+		for i in range(self.__commandList.__len__()):
+			#
+			if addPrefix:
+				if (self.__appendPrefixShort(command) == self.__commandList[i].cmdShort) or \
+						(self.__appendPrefixLong(command) == self.__commandList[i].cmdLong):
+					#
+					return self.__commandList[i].num
+			else:
+				if command in [self.__commandList[i].cmdShort, self.__commandList[i].cmdLong]:
+					#
+					return self.__commandList[i].num
 		#
-		return temp
+		return 0
 
-	def printCommand(self) -> None:
+	def removeCommand(self, command: str, appendPrefix: bool= True) -> None:
 		"""
 
+		:param command:
+		:param appendPrefix:
 		:return:
 		"""
-		print(self.__commandList)
-
-	def removeCommand(self, shortCommand: str, longCommand: str= '') -> None:
-		"""
-
-		:param shortCommand:
-		:param longCommand:
-		:return:
-		"""
-		# remove short command from list
+		# remove short or long command from list
 		try:
-			# loop list to find item
-			for index in range(len(self.__commandList)):
+			#
+			for i in range(self.__commandList.__len__()):
+				# with prefix - or --
+				if appendPrefix:
+					return (self.__appendPrefixShort(command) == self.__commandList[i].cmdShort) or \
+						(self.__appendPrefixLong(command) == self.__commandList[i].cmdLong)
 				#
-				for key in self.__commandList[index]:
-					# find short command by each element
-					if (self.__commandList[index].get(self.Key.SHORT) == shortCommand) or (longCommand and self.__commandList[index].get(self.Key.LONG) == longCommand):
-						# del element
-						del self.__commandList[index]
+				else:
+					return command == self.__commandList[i].cmdShort or command == self.__commandList[i].cmdLong
 
 		except Exception as e:
-			print(f'{str(e)}')
+			self.__console(content= f'{str(e)}')
 
 	def run(self) -> None:
 		"""
@@ -370,11 +499,13 @@ class SmileArgs:
 		"""
 		#
 		for a in sys.argv[1:]:
-			# print(f'run {a=}')
-			if self.__isValidFormatCommand(a) and self.__foundCommand(a):
-				self.__appearCollection(a)
+			if self.__isValidFormatCommand(a):
+				self.__grabCommand(a)
+		# self.__debug(f'>>>>>>>>>>>>>>>>>>>>> run: {self.__commandList=}')
+		# self.__debug(f'>>>>>>>>>>>>>>>>>>>>> run: {self.__args=}')
+		# for i in range(self.__args.__len__()):
+		# 	self.__debug(f'{self.__args[i].num=}, {self.__args[i].value=}, {self.__args[i].priority=}, {self.__args[i].cmdLong=}, {self.__args[i].cmdShort=}')
 
-		print(f'run appear command: {self.__args}, {self.__commandFound}')
 	def setAssignSymbol(self, symbol: str= OptionDelimiterSymbol.EQUAL) -> None:
 		"""
 
