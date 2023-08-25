@@ -246,19 +246,17 @@ class SmileArgs:
 
 			# find any existed
 			if self.__isDuplicatedOnAdd(shortCommand= shortCommand, longCommand= longCommand):
-				# self.__debug(f' addCommand duplication {longCommand=}, {shortCommand}')
+				#
 				if self.__acceptedDuplication:
 					# accept
 					_continue   = True
-					# self.__debug(f'addCommand duplication accepted')
+
 			# not exist
 			else:
-				# self.__debug(f'addCommand not duplicated')
 				_continue   = True
 
 			#
 			if _continue:
-				# self.__debug(f'addCommand append')
 				# increase power by 2
 				self.__number *= 2
 
