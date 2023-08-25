@@ -95,10 +95,7 @@ class SmileArgs:
 		:param command:
 		:return:
 		"""
-		if command:
-			return f'{self.OptionPrefixSymbol.LONG}{command}'
-		# nothing
-		return None
+		return f'{self.OptionPrefixSymbol.LONG}{command}' if command else None
 
 	def __appendPrefixShort(self, command: str= None) -> Union[str | None]:
 		"""
@@ -106,10 +103,7 @@ class SmileArgs:
 		:param command:
 		:return:
 		"""
-		if command:
-			return f'{self.OptionPrefixSymbol.SHORT}{command}'
-		# nothing
-		return None
+		return f'{self.OptionPrefixSymbol.SHORT}{command}' if command else None
 
 	def __console(self, func: str, content: str= None) -> None:
 		"""
@@ -138,15 +132,15 @@ class SmileArgs:
 		:return:
 		"""
 		# pattern
-		_pW = '([(\-\-)(\-)]+\w+)(=?(\w+)?)'  # --mom=miss or -m=miss
-		_pS = '(^\-\w{1}$)'  # -m len(m) == 1
-		_pL = '(\-\-\w.{1,})'  # --mom len(mom) > 1
+		_pW     = '([(\-\-)(\-)]+\w+)(=?(\w+)?)'  # --mom=miss or -m=miss
+		_pS     = '(^\-\w{1}$)'  # -m len(m) == 1
+		_pL     = '(\-\-\w.{1,})'  # --mom len(mom) > 1
 
 		#
-		cmd         = ''
-		command     = ''
-		isLong      = False
-		value       = ''
+		cmd     = ''
+		command = ''
+		isLong  = False
+		value   = ''
 
 		# round 1
 		try:
@@ -155,52 +149,52 @@ class SmileArgs:
 			command     = round1.groups()[0]
 			value       = round1.groups()[2]
 
-		except Exception as e:
-			self.__console(func= '__hatchArg round 1', content= f'Exception: {str(e)}')
-
-		# round 2
-		try:
-			isLong  = True
-			round2  = re.match(_pL, command)
-			cmd     = round2.groups()[0]
-
-		except Exception as e:
-			# self.__console(func= f'__hatchArg round 2 {command=}', content= f'Exception: {str(e)}')
-			# round 3
+			# round 2
 			try:
-				isLong  = False
-				round3  = re.match(_pS, command)
-				cmd     = round3.groups()[0]
+				isLong  = True
+				round2  = re.match(_pL, command)
+				cmd     = round2.groups()[0]
 
 			except Exception as e:
-				# self.__console(func= f'__hatchArg round 3 {command=}', content= f'Exception: {str(e)}')
-				cmd     = ''
+				self.__console(func= f'__hatchArg round 2 {command=}', content= f'Exception: {str(e)}')
+				# round 3
+				try:
+					isLong  = False
+					round3  = re.match(_pS, command)
+					cmd     = round3.groups()[0]
 
-		# valid command, and continue to find in the exist command
-		if cmd and not self.__isDuplicatedOnHatch(cmd):
-			# loop to find
-			for i in range(self.__commandList.__len__()):
-				# long condition
-				if isLong and self.__commandList[i].cmdLong == cmd:
-					item        = CommandArgs()
-					item.cmdLong    = cmd
-					item.isLong     = isLong
-					item.num        = self.__commandList[i].num
-					item.priority   = self.__commandList[i].priority
-					item.value      = value
-					# add to list
-					self.__args.append(item)
+				except Exception as e:
+					self.__console(func= f'__hatchArg round 3 {command=}', content= f'Exception: {str(e)}')
+					cmd     = ''
 
-				# short condition
-				elif isLong is False and self.__commandList[i].cmdShort == cmd:
-					item        = CommandArgs()
-					item.cmdLong    = cmd
-					item.isLong     = isLong
-					item.num        = self.__commandList[i].num
-					item.priority   = self.__commandList[i].priority
-					item.value      = value
-					# add to list
-					self.__args.append(item)
+			# valid command, and continue to find in the exist command
+			if cmd and not self.__isDuplicatedOnHatch(cmd):
+				# loop to find
+				for i in range(self.__commandList.__len__()):
+					# long condition
+					if isLong and self.__commandList[i].cmdLong == cmd:
+						item        = CommandArgs()
+						item.cmdLong    = cmd
+						item.isLong     = isLong
+						item.num        = self.__commandList[i].num
+						item.priority   = self.__commandList[i].priority
+						item.value      = value
+						# add to list
+						self.__args.append(item)
+
+					# short condition
+					elif isLong is False and self.__commandList[i].cmdShort == cmd:
+						item        = CommandArgs()
+						item.cmdLong    = cmd
+						item.isLong     = isLong
+						item.num        = self.__commandList[i].num
+						item.priority   = self.__commandList[i].priority
+						item.value      = value
+						# add to list
+						self.__args.append(item)
+
+		except Exception as e:
+			self.__console(func= '__hatchArg round 1', content= f'Exception: {str(e)}')
 
 	def __isDuplicatedOnAdd(self, shortCommand: str= None, longCommand: str= None, appendPrefix: bool= True) -> bool:
 		"""
@@ -231,7 +225,6 @@ class SmileArgs:
 		"""
 		#
 		for i in range(self.__args.__len__()):
-			self.__debug(func= f'__isDuplicatedOnHatch', content= f'{command=}, {self.__args[i].cmdShort=}, {self.__args[i].cmdLong=}')
 			return command in [self.__args[i].cmdShort or self.__args[i].cmdLong]
 		#
 		return False
