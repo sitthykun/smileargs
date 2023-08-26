@@ -11,7 +11,7 @@ class CommandBase:
 		"""
 		self.cmdLong    = None
 		self.cmdShort   = None
-		self.num        = 0
+		self.id         = 0
 		self.priority   = 0
 		self.value      = None
 
@@ -75,7 +75,6 @@ class SmileArgs:
 		# private
 		self.__commandAssignedSymbol= self.OptionDelimiterSymbol.EQUAL
 		self.__commandList          = []
-		self.__commandMinNum        = 2
 		## command
 		self.__acceptedDuplication  = duplicated
 		self.__args                 = []
@@ -84,10 +83,8 @@ class SmileArgs:
 		self.__isConsole            = console
 		self.__isDebug              = debug
 		## value
-		self.__number               = 1
-		## pattern
-		self.__patternCommand       = '([(\-\-)(\-)]+\w+)'
-		self.__patternFull          = '([(\-\-)(\-)]+\w+)(=?(\w+)?)'
+		self.__id                   = 1
+		self.__numIncrease          = 2
 
 	def __appendPrefixLong(self, command: str = None) -> Union[str | None]:
 		"""
@@ -173,10 +170,11 @@ class SmileArgs:
 				for i in range(self.__commandList.__len__()):
 					# long condition
 					if isLong and self.__commandList[i].cmdLong == cmd:
-						item        = CommandArgs()
+						item            = CommandArgs()
+						# detail
 						item.cmdLong    = cmd
+						item.id         = self.__commandList[i].id
 						item.isLong     = isLong
-						item.num        = self.__commandList[i].num
 						item.priority   = self.__commandList[i].priority
 						item.value      = value
 						# add to list
@@ -184,10 +182,11 @@ class SmileArgs:
 
 					# short condition
 					elif isLong is False and self.__commandList[i].cmdShort == cmd:
-						item        = CommandArgs()
-						item.cmdLong    = cmd
+						item            = CommandArgs()
+						# detail
+						item.cmdShort   = cmd
+						item.id        = self.__commandList[i].id
 						item.isLong     = isLong
-						item.num        = self.__commandList[i].num
 						item.priority   = self.__commandList[i].priority
 						item.value      = value
 						# add to list
@@ -258,7 +257,7 @@ class SmileArgs:
 			#
 			if _continue:
 				# increase power by 2
-				self.__number *= 2
+				self.__id   *= self.__numIncrease
 
 				# object
 				item    = CommandAdd()
@@ -268,7 +267,7 @@ class SmileArgs:
 				item.cmdLong    = f'{self.OptionPrefixSymbol.LONG}{longCommand}'  if longCommand else None
 				item.cmdShort   = f'{self.OptionPrefixSymbol.SHORT}{shortCommand}'  if shortCommand else None
 				# special value
-				item.num        = self.__number
+				item.id         = self.__id
 				item.priority   = priority
 				# add to list
 				self.__commandList.append(item)
@@ -300,11 +299,13 @@ class SmileArgs:
 				if (self.__appendPrefixShort(command) == self.__commandList[i].cmdShort) or \
 						(self.__appendPrefixLong(command) == self.__commandList[i].cmdLong):
 					#
-					return self.__commandList[i].num
+					return self.__commandList[i].id
+			#
 			else:
+				# check with short and long command
 				if command in [self.__commandList[i].cmdShort, self.__commandList[i].cmdLong]:
-					#
-					return self.__commandList[i].num
+					# num or id
+					return self.__commandList[i].id
 		#
 		return 0
 
@@ -335,7 +336,9 @@ class SmileArgs:
 
 		:return:
 		"""
+		# string token
 		for arg in sys.argv[1:]:
+			# verify
 			self.__hatchArg(arg)
 
 	def setAssignSymbol(self, symbol: str= OptionDelimiterSymbol.EQUAL) -> None:
