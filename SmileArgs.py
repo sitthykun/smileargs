@@ -136,7 +136,9 @@ class SmileArgs:
 		:return:
 		"""
 		# pattern
-		_pW     = '([(\-\-)(\-)]+\w+)(=?(\w+)?)'  # --mom=miss or -m=miss
+		## equal --mom=miss or -m=miss or
+		## colom --mom:miss or -m:miss
+		_pW     = '([(\-\-)(\-)]+\w+)(' + self.__commandAssignedSymbol + '?(\w+)?)'
 		_pS     = '(^\-\w{1}$)'  # -m len(m) == 1
 		_pL     = '(\-\-\w.{1,})'  # --mom len(mom) > 1
 
