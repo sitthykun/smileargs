@@ -1,3 +1,10 @@
+"""
+Author: masakokh
+Year: 2023
+Package: library
+Note:
+Version: 1.0.0
+"""
 # built-in
 import re
 import sys
