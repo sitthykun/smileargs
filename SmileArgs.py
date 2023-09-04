@@ -129,18 +129,19 @@ class SmileArgs:
 		if self.__isDebug:
 			print(f'{self.__class__.__name__}.{func} Debug: {content}')
 
-	def __hatchArg(self, arg: str) -> None:
+	def __hatchArg(self, arg: str, length: int= 1) -> None:
 		"""
 
 		:param arg:
+		:param length:
 		:return:
 		"""
 		# pattern
 		## equal --mom=miss or -m=miss or
 		## colom --mom:miss or -m:miss
 		_pW     = '([(\-\-)(\-)]+\w+)(' + self.__commandAssignedSymbol + '?(\w+)?)'
-		_pS     = '(^\-\w{1}$)'  # -m len(m) == 1
-		_pL     = '(\-\-\w.{1,})'  # --mom len(mom) > 1
+		_pS     = '(^\-\w{' + str(length) + '}$)'  # -m len(m) == 1
+		_pL     = '(^\-\-\w.{' + str(length) + ',}$)'  # --mom len(mom) > 1
 
 		#
 		cmd     = ''
@@ -157,14 +158,15 @@ class SmileArgs:
 
 			# round 2
 			try:
+				# set long command
 				isLong  = True
 				round2  = re.match(_pL, command)
 				cmd     = round2.groups()[0]
 
 			except Exception as e:
-				self.__console(func= f'__hatchArg round 2 {command=}', content= f'Exception: {str(e)}')
 				# round 3
 				try:
+					# set short command
 					isLong  = False
 					round3  = re.match(_pS, command)
 					cmd     = round3.groups()[0]
