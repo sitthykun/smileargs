@@ -71,11 +71,11 @@ class SmileArgs:
 		MEDIUM  = 2
 		HIGH    = 3
 
-	def __init__(self, allowNoValue: bool= False, duplicated: bool= False, console: bool= True, debug: bool= False):
+	def __init__(self, isAllowedNoValue: bool= False, isDuplicated: bool= False, console: bool= True, debug: bool= False):
 		"""
 
-		:param allowNoValue:
-		:param duplicated:
+		:param isAllowedNoValue:
+		:param isDuplicated:
 		:param console:
 		:param debug:
 		"""
@@ -83,9 +83,9 @@ class SmileArgs:
 		self.__commandAssignedSymbol= self.OptionDelimiterSymbol.EQUAL
 		self.__commandList          = []
 		## command
-		self.__acceptedDuplication  = duplicated
+		self.__acceptedDuplicate    = isDuplicated
 		self.__args                 = []
-		self.__isAllowedNoValue     = allowNoValue
+		self.__isAllowedNoValue     = isAllowedNoValue
 		self.__isCmdLong            = False
 		self.__isConsole            = console
 		self.__isDebug              = debug
@@ -257,7 +257,7 @@ class SmileArgs:
 			# find any existed
 			if self.__isDuplicatedOnAdd(shortCommand= shortCommand, longCommand= longCommand):
 				#
-				if self.__acceptedDuplication:
+				if self.__acceptedDuplicate:
 					# accept
 					_continue   = True
 
