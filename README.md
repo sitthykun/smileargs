@@ -3,7 +3,7 @@ It is a modern args catching with python3 and OOP structure and implementation.
 ## Optional
 Some parameters will clarify more, when instance starting
 ```
-smile = SmileArgs(allowNoValue= False, duplicated= False, console= True, debug= False)
+smile = SmileArgs(isAllowedNoValue= False, isDuplicated= False, console= True, debug= False)
 ```
 - allowNoValue: bool= False | True
   - No require value on args 
