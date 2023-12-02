@@ -239,7 +239,7 @@ class SmileArgs:
 		#
 		return False
 
-	def addCommand(self, shortCommand: str= None, longCommand: str= None, description: str= None, priority: int= Priority.IGNORE, overrideNum: list= []) -> None:
+	def addCommand(self, shortCommand: str= None, longCommand: str= None, description: str= '', priority: int= Priority.IGNORE, overrideNum: list= []) -> None:
 		"""
 
 		:param shortCommand:
@@ -271,7 +271,7 @@ class SmileArgs:
 				self.__id   *= self.__numIncrease
 
 				# object
-				item    = CommandAdd()
+				item            = CommandAdd()
 				# item
 				item.description= description
 				# main key
@@ -282,6 +282,7 @@ class SmileArgs:
 				item.priority   = priority
 				# add to list
 				self.__commandList.append(item)
+				print(f'{item.cmdShort}, {item.description=}')
 
 	def catchCommand(self) -> list:
 		"""
