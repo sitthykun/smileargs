@@ -63,6 +63,8 @@ On terminal try with this
 ```
 $ python3.10 test.py -a -ab -a --miss=mom
 ```
+<img width="853" alt="test-smileargs" src="https://github.com/sitthykun/smileargs/assets/227092/9855c13c-7400-4d2c-94ff-7c0508b7981a">
+
 # Example 2
 
 create a testclass.py
