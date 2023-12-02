@@ -92,12 +92,15 @@ class TestClass:
   def executeCLICommand(self) -> None:
     """
     """
+    #
+    self.checkCLI()
+    # 
     for s in self.__smile.catchCommand():
       print(f'{f.cmdShort or f.cmdLong} \t\t{f.value}')
     
 
 testClass = TestClass()
-testClass.checkCLI()
+testClass.executeCLICommand()
 ```
 
 ## cli
