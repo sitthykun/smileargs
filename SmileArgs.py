@@ -3,7 +3,7 @@ Author: masakokh
 Year: 2023
 Package: library
 Note:
-Version: 1.1.1
+Version: 1.1.2
 """
 # built-in
 import re
