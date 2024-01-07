@@ -21,13 +21,13 @@ smile = SmileArgs(isAllowedNoValue= False, isDuplicated= False, console= True, d
 - debug bool= False | True
   - This property will track any prompt while working
 
-## getCommand()
-- show all added commands
-- return list
-
 ## catchCommand()
 - after executed run() method, it allows us to get catch command list
 - show all cli command that matched to the added command
+- return list
+
+## getCommand()
+- show all added commands
 - return list
 
 ## run()
