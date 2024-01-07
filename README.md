@@ -2,7 +2,7 @@
 # Smile Arguments
 ## Version 1.1.2
 - Improving
-- Clean up
+- Cleaning up
 ## Why SmileArgs
 It is a modern args catching with python3 and OOP structure and implementation.
 ## Optional
