@@ -1,3 +1,8 @@
+
+# Smile Arguments
+## Version 1.1.1
+- Improving
+- Clean up
 ## Why SmileArgs
 It is a modern args catching with python3 and OOP structure and implementation.
 ## Optional
@@ -20,15 +25,18 @@ smile = SmileArgs(isAllowedNoValue= False, isDuplicated= False, console= True, d
 - show all added commands
 - return list
 
-## run()
-- find and match command via cli
-- Ex: python test.py -a=Miss -b=Mom
-
 ## catchCommand()
 - after executed run() method, it allows us to get catch command list
 - show all cli command that matched to the added command
 - return list
 
+## run()
+- find and match command via cli
+- Ex: python test.py -a=Miss -b=Mom
+
+## show()
+- display all added commands
+- if found commands, it will display all cough commands
 
 ## Example 1
 Create a test.py
@@ -40,23 +48,12 @@ smile.addCommand('a', 'alphabet', 'show alphabet')
 smile.addCommand('b', 'baby', 'miss mom by her baby')
 smile.addCommand('m', 'miss', 'miss mom everyday')
 
-print(f'Print all added commands')
-print(f'Short Command \tLong Command \t\tDescription')
-print(f'+--------------+-----------------------------------------')
-for a in smile.getCommand():
-	print(f'{a.cmdShort} \t\t{a.cmdLong} \ndescription: {a.description}')
-	print(f'+--------------+---------------------')
-
 # catch cli command
 print(f'\nFound commands via cli')
 smile.run()
 
 # show
-print(f'Short/Long Command \tValue')
-print(f'+--------------+-----------------------------------------')
-for f in smile.catchCommand():
-	print(f'{f.cmdShort or f.cmdLong} \t\t{f.value}')
-	print(f'+--------------+---------------------')
+smile.show()
 
 ```
 On terminal try with this

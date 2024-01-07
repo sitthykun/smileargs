@@ -3,7 +3,7 @@ Author: masakokh
 Year: 2023
 Package: library
 Note:
-Version: 1.0.0
+Version: 1.1.1
 """
 # built-in
 import re
@@ -39,9 +39,6 @@ class CommandArgs(CommandBase):
 		"""
 		super().__init__()
 		self.isLong         = False
-
-
-# class CommandHatch:
 
 
 class SmileArgs:
@@ -117,7 +114,7 @@ class SmileArgs:
 		:return:
 		"""
 		if self.__isConsole:
-			print(f'{self.__class__.__name__}.{func}: {content}')
+			self.__print(f'{self.__class__.__name__}.{func}: {content}')
 
 	def __debug(self, func: str, content: str) -> None:
 		"""
@@ -127,7 +124,7 @@ class SmileArgs:
 		:return:
 		"""
 		if self.__isDebug:
-			print(f'{self.__class__.__name__}.{func} Debug: {content}')
+			self.__print(f'{self.__class__.__name__}.{func} Debug: {content}')
 
 	def __hatchArg(self, arg: str, length: int= 1) -> None:
 		"""
@@ -172,7 +169,7 @@ class SmileArgs:
 					cmd     = round3.groups()[0]
 
 				except Exception as e:
-					self.__console(func= f'__hatchArg round 3 {command=}', content= f'Exception: {str(e)}')
+					self.__debug(func= f'__hatchArg round 3 {command=}', content= f'Exception: {str(e)}')
 					cmd     = ''
 
 			# valid command, and continue to find in the exist command
@@ -204,7 +201,7 @@ class SmileArgs:
 						self.__args.append(item)
 
 		except Exception as e:
-			self.__console(func= '__hatchArg round 1', content= f'Exception: {str(e)}')
+			self.__debug(func= '__hatchArg round 1', content= f'Exception: {str(e)}')
 
 	def __isDuplicatedOnAdd(self, shortCommand: str= None, longCommand: str= None, appendPrefix: bool= True) -> bool:
 		"""
@@ -238,6 +235,14 @@ class SmileArgs:
 			return command in [self.__args[i].cmdShort or self.__args[i].cmdLong]
 		#
 		return False
+
+	def __print(self, message: str) -> None:
+		"""
+
+		:param message:
+		:return:
+		"""
+		print(message)
 
 	def addCommand(self, shortCommand: str= None, longCommand: str= None, description: str= '', priority: int= Priority.IGNORE, overrideNum: list= []) -> None:
 		"""
@@ -282,7 +287,8 @@ class SmileArgs:
 				item.priority   = priority
 				# add to list
 				self.__commandList.append(item)
-				print(f'{item.cmdShort}, {item.description=}')
+				self.__console(f'Command Addition')
+				self.__console(f'short: {item.cmdShort}, long: {item.cmdLong}, description: {item.description=}')
 
 	def catchCommand(self) -> list:
 		"""
@@ -332,16 +338,25 @@ class SmileArgs:
 		try:
 			#
 			for i in range(self.__commandList.__len__()):
+				# found
+				found   = False
 				# with prefix - or --
 				if appendPrefix:
-					return (self.__appendPrefixShort(command) == self.__commandList[i].cmdShort) or \
-						(self.__appendPrefixLong(command) == self.__commandList[i].cmdLong)
+					if (self.__appendPrefixShort(command) == self.__commandList[i].cmdShort):
+						found   = True
+					elif (self.__appendPrefixLong(command) == self.__commandList[i].cmdLong):
+						found   = True
 				#
 				else:
-					return command == self.__commandList[i].cmdShort or command == self.__commandList[i].cmdLong
+					if command == self.__commandList[i].cmdShort or command == self.__commandList[i].cmdLong:
+						found   = True
+				#
+				if found:
+					self.__console(f'Command Removing')
+					self.__console(f'short: {self.__commandList[i].cmdShort}, long: {self.__commandList[i].cmdLong}, description: {self.__commandList[i].description=}')
 
 		except Exception as e:
-			self.__console(func= 'removeCommand', content= f'Exception: {str(e)}')
+			self.__debug(func= 'removeCommand', content= f'Exception: {str(e)}')
 
 	def run(self) -> None:
 		"""
@@ -360,3 +375,35 @@ class SmileArgs:
 		:return:
 		"""
 		self.__commandAssignedSymbol  = symbol
+
+	def show(self) -> None:
+		"""
+
+		:return:
+		"""
+		lineTable   = '=========================================================='
+		lineRowFirst= '+--------------+------------------------------------------'
+		lineRowNext = '+--------------+---------------------'
+		# added
+		self.__print(f'{lineTable}')
+		self.__print(f'Print all added commands')
+		self.__print(f'Short Command \tLong Command \t\tDescription')
+		self.__print(f'{lineRowFirst}')
+		# loop to print all element
+		for a in self.getCommand():
+			self.__print(f'  {a.cmdShort} \t\t{a.cmdLong} \n description: {a.description}')
+			self.__print(f'{lineRowNext if a != self.getCommand()[-1] else ""}')
+		self.__print(f'{lineRowFirst}')
+
+		#
+		if len(self.catchCommand()) > 0:
+			# caught
+			self.__print(f'{lineTable}')
+			self.__print(f'Print all caught commands')
+			self.__print(f'Short/Long Command \tValue')
+			self.__print(f'{lineRowFirst}')
+			# loop to print all element
+			for c in self.catchCommand():
+				self.__print(f'  {c.cmdShort or c.cmdLong} \t\t{c.value or ""}')
+				self.__print(f'{lineRowNext if c != self.catchCommand()[-1] else ""}')
+			self.__print(f'{lineRowFirst}')
