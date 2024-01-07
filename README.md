@@ -1,6 +1,6 @@
 
 # Smile Arguments
-## Version 1.1.1
+## Version 1.1.2
 - Improving
 - Clean up
 ## Why SmileArgs
@@ -108,3 +108,7 @@ $ python3.10 testclass.py -a -ab -a --miss=mom
 ```
 it will catch '-a' as a short command, and '--miss' as a long command;
 then use match or if statement to control those states.
+
+It is available on **PyPi** store via https://pypi.org/project/SmileArgs/ \
+To Support my work, please donate me via <a class="bmc-button" target="_blank" href="https://www.buymeacoffee.com/sitthykun"><img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a Pizza"><span style="margin-left:5px;font-size:28px !important;">Buy me a Coffee</span></a>
+ 
